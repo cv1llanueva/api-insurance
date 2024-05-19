@@ -1,0 +1,62 @@
+DROP DATABASE IF EXISTS bd_api_insurance;
+CREATE DATABASE bd_api_insurance CHARSET utf8mb4;
+USE bd_api_insurance;
+
+CREATE TABLE Policyholder (
+    policyholderId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    documentTypeId INT,
+    documentNumber VARCHAR(20) NOT NULL,
+    companyName VARCHAR(100),
+    contactPersonFirstName VARCHAR(50),
+    contactPersonLastName VARCHAR(50),
+    contactPersonEmail VARCHAR(255),
+    contactPersonPhone VARCHAR(20),
+    isIndividual BOOLEAN NOT NULL,
+    registerDate DATETIME NOT NULL,
+    status ENUM('active', 'inactive') NOT NULL,
+    FOREIGN KEY (documentTypeId) REFERENCES DocumentType(documentTypeId)
+);
+
+CREATE TABLE Policy (
+    policyId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    policyholderId INT,
+    policyNumber VARCHAR(20) NOT NULL,
+    startDate DATE NOT NULL,
+    endDate DATE NOT NULL,
+    premium DECIMAL(10, 2) NOT NULL,
+    status ENUM('active', 'inactive') NOT NULL,
+    FOREIGN KEY (policyholderId) REFERENCES Policyholder(policyholderId)
+);
+
+CREATE TABLE Claim (
+    claimId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    policyId INT,
+    claimDate DATE NOT NULL,
+    description TEXT,
+    status ENUM('submitted', 'approved', 'rejected') NOT NULL,
+    FOREIGN KEY (policyId) REFERENCES Policy(policyId)
+);
+
+CREATE TABLE ClaimDocument (
+    claimDocumentId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    claimId INT,
+    documentType VARCHAR(50) NOT NULL,
+    documentUrl VARCHAR(255) NOT NULL,
+    FOREIGN KEY (claimId) REFERENCES Claim(claimId)
+);
+
+CREATE TABLE ClaimPayment (
+    claimPaymentId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    claimId INT,
+    amount DECIMAL(10, 2) NOT NULL,
+    paymentDate DATE NOT NULL,
+    paymentMethod ENUM('bank_transfer', 'cheque', 'cash') NOT NULL,
+    FOREIGN KEY (claimId) REFERENCES Claim(claimId)
+);
+
+-- Insertar tipos de documentos
+INSERT INTO DocumentType (documentTypeId, documentTypeName) VALUES (1, 'Singapore National Identity Card (NRIC)');
+INSERT INTO DocumentType (documentTypeId, documentTypeName) VALUES (2, 'Singaporean Passport');
+INSERT INTO DocumentType (documentTypeId, documentTypeName) VALUES (3, 'Certificate of Incorporation');
+INSERT INTO DocumentType (documentTypeId, documentTypeName) VALUES (4, 'Unique Entity Number (UEN)');
+INSERT INTO DocumentType (documentTypeId, documentTypeName) VALUES (5, 'Goods and Services Tax Identification (GST)');
